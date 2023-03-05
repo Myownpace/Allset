@@ -1,0 +1,9 @@
+This document defines how the ui library works
+# dependencies
+    The ui library needs a variety of files to work properly and they are all listed
+    here
+    --js--
+    basics.js
+    --css--
+    literal.css
+    ui.css
