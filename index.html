@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="favicon.png">
+    <link rel="stylesheet" href="/lib/css/literal.css">
+    <script defer src="/lib/qr-code/qrcode.js"></script>
+    <script defer src="/lib/js/basics.js"></script>
+    <style>
+        *{box-sizing: border-box;}
+        input#url{border-bottom: 2px solid #000;}
+        select.normal{border-bottom:2px solid #000}
+        a{color:#000; text-decoration: none;}
+        #generated img{margin:auto; max-width:90%}
+        #generated img.icon{max-width:20px}
+    </style>
+    <title>QR code generator</title>
+    <script>
+        window.onload = function(){
+            var box,generatedBox,QRobj,codeActions,downloadAction,copyAction,uri,sizeInput,generatedCode,size
+            var urlInput = document.getElementById("url")
+            var errorBox = document.getElementById("error")
+            var sizeInput = document.getElementById("sizes")
+            var sizeInputBox = document.getElementById("size-box")
+            var genBtn = document.getElementById("Gen")
+            var maxSize = 1000
+            var counter = 300
+            var defaultSize = counter
+            var counterIncrement = 100
+            genBtn.onclick = function(){
+                GenerateCode()
+            }
+            setCustomSizes()
+            function GenerateCode(){
+                uri = urlInput.value
+                var formalSize = size
+                size = sizeInput.value
+                if(!box){box  = document.getElementById("g-c-c")}
+                box.style.display = "none"
+                if(!QRobj || formalSize != size){
+                    generatedBox = document.getElementById("generated"); generatedBox.innerHTML = ""
+                    QRobj = new QRCode(generatedBox,{width:size,height:size})
+                    generatedCode = QRobj._oDrawing._elImage
+                }
+                generatedCode.onload = function(){
+                    if(!codeActions){
+                        codeActions = document.createElement("div"); 
+                        codeActions.className = "flex space-up minor-pad hcenter my-shadow"
+                        codeActions.style.alignItems = "flex-end"; codeActions.style.gap = "4%"
+                        
+                        downloadAction = document.createElement("a"); downloadAction.className = "pointer"
+                        var downloadIcon = document.createElement("img"); downloadIcon.src = "img/download.png"
+                        downloadIcon.className = "icon block auto-margin"
+                        var downloadText = document.createElement("div"); 
+                        downloadText.className = "small-text center-text" 
+                        downloadText.innerHTML = "Download"
+                        append(downloadAction,[downloadIcon,downloadText])
+
+                        copyAction = downloadAction.cloneNode(true); copyAction.innerHTML = ""
+                        var copyIcon = document.createElement("button"); copyIcon.innerHTML = "&lt;/&gt;"
+                        copyIcon.className = "black-bg white round no-border bold code-symbol";
+                        var copyText = downloadText.cloneNode(true); copyText.innerHTML = "Copy code"
+                        copyAction.onclick = copyCode
+                        append(copyAction,[copyIcon,copyText])
+
+                        append(codeActions,[downloadAction,copyAction]);
+                    }
+                    downloadAction.download = "Qr-code"
+                    downloadAction.setAttribute("download","Qr-code.png")
+                    downloadAction.href = generatedCode.src
+                    box.appendChild(codeActions)
+                    box.style.display = "block"
+                }
+                QRobj.makeCode(uri)
+            }
+            function setCustomSizes(){
+                if(counter >= maxSize){return}
+                changeClass(sizeInputBox,"none","")
+                for(counter = counter; counter <= maxSize; counter += counterIncrement){
+                    counterString = counter.toString()
+                    var option = document.createElement("option"); 
+                    option.innerHTML = counterString + "x" + counterString + ((counter == defaultSize)? " (default)" : "");
+                    option.value = counter;
+                    sizeInput.appendChild(option)
+                }
+            }
+            function copyCode(){copy(generatedCode.outerHTML)}
+            function genError(msg){
+                errorBox.innerHTML = msg; changeClass(errorBox,"","error") 
+            }
+            function removeError(){errorBox.innerHTML = ""; changeClass(errorBox,"error","")}
+        }
+    </script>
+</head>
+<body class="flex vcenter hcenter hfull my-fonts">
+    <div class="mid-section center-text space-inside my-shadow">
+        <img class="site-logo" src="img/logo.png">
+        <h2>QR code scanner</h2>
+        <div class="my-shadow minor-pad bold">
+            Generate your QR code
+        </div>
+        <div class="grey space-up">
+            Input the url for the QR code you wish to generate now, and have your code generated now
+        </div>
+        <div id="error" class="space-up"></div>
+        <div id="g-c-c" class="center-text space-up">
+            <div id="generated"></div>
+        </div>
+        <div id="url-box" class="minor-pad space-up bit-curved space-down">
+            <label class="block left-text grey">URL</label>
+            <input id="url" class="full-width minor-pad no-border normal">
+        </div>
+        <div id="size-box" class="minor-pad space-up">
+            <label class="block left-text grey">Size of code</label>
+            <select class="normal full-width minor-pad no-border pointer" id="sizes">
+            </select>
+        </div>
+        <button class="black-bg no-border minor-pad white curved space-left pointer" id="Gen">Generate</button>
+    </div>
+</body>
+</html>
